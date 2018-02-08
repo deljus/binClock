@@ -1,0 +1,19 @@
+{
+  "name": "binclock",
+  "version": "1.0.0",
+  "description": "binary clock",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server"
+  },
+  "author": "deljus",
+  "license": "ISC",
+  "devDependencies": {
+    "path": "^0.12.7",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.1"
+  },
+  "dependencies": {
+    "pixi.js": "^4.7.0"
+  }
+}
