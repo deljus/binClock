@@ -1,62 +1,76 @@
 import * as PIXI from 'pixi.js';
 
-const windowSize = {
-  width: document.documentElement.clientWidth,
-  height: document.documentElement.clientHeight,
-};
+const {
+    loader,
+    Sprite,
+    Application,
+    TextureCache,
+} = PIXI;
 
-var app = new PIXI.Application(windowSize.width, windowSize.height);
+
+let app = new Application({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight,
+    antialias: true,
+    transparent: false,
+    resolution: 1
+});
+
 document.body.appendChild(app.view);
 
-// Create background image
-var background = PIXI.Sprite.fromImage("/static/background.jpg");
-background.width = app.screen.width;
-background.height = app.screen.height;
-app.stage.addChild(background);
-
 let clock = [];
-let positions = [];
+let border = 50;
 
-for (let k = 1; k <= 3; k++){
-  clock[k-1] = [];
-  positions[k-1] = [];
-  for(let i = 1; i <= 6; i++){
-    let graphics = new PIXI.Graphics();
-    //graphics.lineStyle(0);
-    graphics.beginFill(0x000000, 0.5);
-    graphics.drawCircle(i*300, k*200, 75);
-    graphics.endFill();
-    clock[k-1].push(graphics);
-    positions[k-1].push([i*300, k*200, 75]);
-    app.stage.addChild(graphics);
-  }
-}
-
-const intToBinArr = (num) => {
+function intToBinArr(num, len = 5) {
     let binNum = num.toString(2)
-                    .split("")
-                    .map(e => Number(e));
-    const delta = 6 - binNum.length;
-
-
-
+        .split("")
+        .map(e => Number(e));
+    for(let i = binNum.length; i <= len; i++){ binNum.unshift(0) };
     return binNum;
-    //return arr.map((e,i) => binNum[i]? Number(binNum[i]): 0);
 };
 
-setInterval(() => {
-  let date = new Date();
-  let seconds = intToBinArr(date.getSeconds());
-  console.log(seconds)
-  // seconds.forEach((item, i) => {
-  //     if(item){
-  //         clock[0][i].clear();
-  //         clock[0][i].beginFill(0xFFFFFF, 0.5);
-  //         clock[0][i].drawCircle(...positions[0][i]);
-  //     } else {
-  //         clock[0][i].clear();
-  //         clock[0][i].beginFill(0x000000, 0.5);
-  //         clock[0][i].drawCircle(...positions[0][i]);
-  //     }
-  // });
-}, 1000);
+function setup() {
+    let backgroundTexture = TextureCache["background.jpg"];
+    let background = new Sprite(backgroundTexture);
+    app.stage.addChild(background);
+
+    let bulbOnTexture = TextureCache["on.png"];
+    let bulbOffTexture = TextureCache["off.png"];;
+
+    for (let k = 0; k < 3; k++){
+      clock[k] = [];
+      for(let i = 0; i < 6; i++){
+
+        let bulb = new Sprite(bulbOffTexture);
+
+        bulb.x = border + i * 50;
+        bulb.y = border + k * 50;
+          bulb.width = 32;
+          bulb.height = 32;
+
+        clock[k].push(bulb);
+        app.stage.addChild(bulb);
+      }
+    }
+
+
+    app.ticker.add(() => {
+        let date = new Date();
+        let time = { hours:   intToBinArr(date.getHours()),
+                     minutes: intToBinArr(date.getMinutes()),
+                     seconds: intToBinArr(date.getSeconds()) };
+
+        Object.keys(time).forEach((key, k) => {
+            time[key].forEach((item, i) => {
+                clock[k][i].texture = (item) ? bulbOnTexture: bulbOffTexture;
+            });
+        });
+    });
+}
+
+
+loader
+    .add("/static/texture.json")
+    .load(setup);
+
+
